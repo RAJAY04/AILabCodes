@@ -1,6 +1,9 @@
-VARIABLES = ["csc", "maths", "phy", "che", "tam", "eng", "bio"]
-DOMAIN = ["Monday", "Tuesday", "Wednesday"]
-CONSTRAINTS = [
+# List of subjects and their corresponding possible days
+subjects = ["csc", "maths", "phy", "che", "tam", "eng", "bio"]
+days = ["Monday", "Tuesday", "Wednesday"]
+
+# Constraints between subjects (i.e., subjects that can't be assigned the same day)
+subject_constraints = [
     ("csc", "maths"),
     ("csc", "phy"),
     ("maths", "phy"),
@@ -15,64 +18,77 @@ CONSTRAINTS = [
 ]
 
 
-def backtrack(assignment):
-    """Finds an assignment of days to subjects using backtracking."""
+def backtrack(assigned_days):
+    """Assigns days to subjects using backtracking."""
 
-    # Check if all variables have been assigned
-    if len(assignment) == len(VARIABLES):
-        return assignment  # Return the complete assignment
+    # Base case: if all subjects have been assigned a day, return the assignment
+    if len(assigned_days) == len(subjects):
+        return assigned_days
 
-    # Select the next unassigned variable (subject)
-    var = select_unassigned_variable(assignment)
+    # Select the next unassigned subject
+    subject = select_unassigned_subject(assigned_days)
 
-    # Try each possible value in the DOMAIN (days)
-    for value in DOMAIN:
-        # Check if the current assignment is consistent with the constraints
-        if is_consistent(var, value, assignment):
-            assignment[var] = value  # Assign the value (day) to the variable (subject)
+    # Try each day from the list of days
+    for day in days:
+        # Check if the assignment is consistent with constraints
+        if is_consistent(subject, day, assigned_days):
+            assigned_days[subject] = day  # Assign the day to the subject
 
-            # Recurse to assign days to the next subjects
-            result = backtrack(assignment)
+            # Recurse to assign days to the remaining subjects
+            result = backtrack(assigned_days)
 
-            # If the result is valid, return the valid assignment
+            # If a valid result is found, return it
             if result is not None:
                 return result
 
-            # If no solution is found, remove the current assignment and try the next value
-            del assignment[var]
+            # If no valid result is found, remove the current assignment and try the next day
+            del assigned_days[subject]
 
-    # Return None if no assignment is found
+    # If no valid assignment can be found, return None
     return None
 
 
-def select_unassigned_variable(assignment):
-    """Selects a variable (subject) that has not been assigned a value yet."""
-    for var in VARIABLES:
-        if var not in assignment:
-            return var  # Return the first unassigned variable (subject)
+def select_unassigned_subject(assigned_days):
+    """Selects the next subject that hasn't been assigned a day yet."""
+    for subject in subjects:
+        if subject not in assigned_days:
+            return subject
 
 
-def is_consistent(var, value, assignment):
-    """Checks if assigning 'value' (a day) to 'var' (a subject) is consistent."""
-    # Check all constraints
-    for var1, var2 in CONSTRAINTS:
-        if var1 == var or var2 == var:  # If the current variable is part of a constraint
-            # Check if the other variable in the constraint already has the same value (day)
-            for assigned_var, assigned_day in assignment.items():
-                if (assigned_var == var1 or assigned_var == var2) and assigned_day == value:
-                    return False  # Inconsistent assignment (same day assigned to constrained subjects)
+def is_consistent(subject, day, assigned_days):
+    """
+    This function checks if assigning a specific 'day' to a 'subject' is
+    consistent with the constraints between subjects.
 
-    # If no conflicts, the assignment is consistent
+    Constraints: Certain subjects cannot share the same day.
+    """
+
+    # Step 1: Check each pair of subjects that have constraints.
+    for subject1, subject2 in subject_constraints:
+
+
+            # Step 3: Check if the other subject in the constraint already has the same day assigned
+        if subject1 == subject:
+                # If subject1 is the current subject, check if subject2 has been assigned the same day
+            if subject2 in assigned_days and assigned_days[subject2] == day:
+                return False  # Conflict found: subject2 has the same day as subject1
+
+        elif subject2 == subject:
+                # If subject2 is the current subject, check if subject1 has been assigned the same day
+            if subject1 in assigned_days and assigned_days[subject1] == day:
+                return False  # Conflict found: subject1 has the same day as subject2
+
+    # Step 4: If no conflicts were found, the assignment is consistent.
     return True
 
 
-# Start the backtracking search with an empty assignment
+# Start the backtracking search with an empty assignment of subjects to days
 solution = backtrack({})
 
-# Print the solution if found
+# Print the solution if a valid assignment is found
 if solution:
-    print("Assignment found:")
+    print("Valid subject-day assignment found:")
     for subject, day in solution.items():
         print(f"{subject}: {day}")
 else:
-    print("No valid assignment found.")
+    print("No valid subject-day assignment found.")

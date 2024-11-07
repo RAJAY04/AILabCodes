@@ -4,13 +4,13 @@ def minimax(depth, nodeIndex, maximizingPlayer, values):
         return values[nodeIndex]
 
     if maximizingPlayer:
-        bestValue = -float('inf')
+        bestValue = -1e9
         for i in range(2):  # Assuming each node has 2 children
             value = minimax(depth - 1, nodeIndex * 2 + i, False, values)
             bestValue = max(bestValue, value)
         return bestValue
     else:
-        bestValue = float('inf')
+        bestValue = 1e9
         for i in range(2):  # Assuming each node has 2 children
             value = minimax(depth - 1, nodeIndex * 2 + i, True, values)
             bestValue = min(bestValue, value)
